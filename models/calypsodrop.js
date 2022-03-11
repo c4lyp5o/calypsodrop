@@ -3,13 +3,13 @@ const Schema = mongoose.Schema;
 
 // create the schema
 var dropSchema = new Schema({
-    title: String,
-    desc: String,
-    image: String,
-    image_id: String,
-    created_at: Date
+    name: String,
+    created_at: String,
+    created_by: String,
+    uniqueID: String,
+    itsPath: String
 });
 
-var Drop = mongoose.model('Drop', dropSchema);
+const Drop = mongoose.model('Drop', dropSchema);
 
 module.exports = Drop;

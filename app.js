@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const path = require('path');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 // init routes
@@ -21,11 +22,25 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan('dev'));
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'uploads')));
 
 // add routes
 app.use('/', theDropWay);
+
+// init DB
+const db = 'mongodb://localhost:27017/calypsodrop';
+mongoose
+  .connect(db, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => {
+    console.log('Connected to Drops Database!');
+  })
+  .catch(err => {
+    console.error('Could not Connect to Database!', err);
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
