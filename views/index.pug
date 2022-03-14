@@ -1,8 +1,11 @@
 extends layout
 
 block content
-  p Hello anon!
-  
+  if user != 'Public'
+    h1 Hello #{user}
+  else
+    h1 Hello anon!
+   
   form(action='/' enctype='multipart/form-data' method='POST') 
     legend Upload anything you want here
     br
@@ -11,7 +14,3 @@ block content
     br
     br
     input(type="submit", value="Submit", class="btn btn-primary")
-
-  //- form(action='/' enctype='multipart/form-data' method='POST')
-  //-   input#thefile.admin__input(type='file' name='thefile')
-  //-   input.admin__submit(type='submit')

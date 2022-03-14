@@ -1,7 +1,9 @@
+// init express stuff
 const express = require('express');
 const createError = require('http-errors');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -19,9 +21,11 @@ app.set('view engine', 'pug');
 
 // add other middleware
 app.use(cors());
+app.use(morgan('dev'));
+app.use(cookieParser());
+app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'uploads')));
 

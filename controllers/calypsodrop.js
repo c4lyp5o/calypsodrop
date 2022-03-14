@@ -11,27 +11,25 @@ exports.registerUserForm = async (req, res, next) => {
 exports.registerUser = async (req, res, next) => {    
     try {
     // get details from body
-    const { first_name, last_name, email, password } = req.body;
-    if (!(email && password && first_name && last_name)) {
+    const { userName, password } = req.body;
+    if (!(userName && password)) {
       res.status(400).send("All input is required");
     }
     // check if user exist
-    const oldUser = await User.findOne({ email });
+    const oldUser = await User.findOne({ user_name: userName });
     if (oldUser) {
-      return res.status(409).send("User Already Exist. Please Login");
+      return res.render('login');
     }
     //Encrypt user password
     encryptedPassword = await bcrypt.hash(password, 10);
     // Create user in our database
     const user = await User.create({
-      first_name,
-      last_name,
-      email: email.toLowerCase(), // sanitize: convert email to lowercase
-      password: encryptedPassword,
+      user_name: userName,
+      password: encryptedPassword
     });
     // Create token
     const token = jwt.sign(
-      { user_id: user._id, email },
+      { user_id: user._id, user_name: user.user_name },
       process.env.TOKEN_KEY,
       {
         expiresIn: "2h",
@@ -54,53 +52,51 @@ exports.loginUserForm = async (req, res, next) => {
 exports.loginUser = async (req, res, next) => {
   try {
     // Get user input
-    const { email, password } = req.body;
+    const { userName, password } = req.body;
 
     // Validate user input
-    if (!(email && password)) {
+    if (!(userName && password)) {
       res.status(400).send("All input is required");
     }
     // Validate if user exist in our database
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({ user_name: userName });
     if (user && (await bcrypt.compare(password, user.password))) {
       // Create token
       const token = jwt.sign(
-        { user_id: user._id, email, user_name: user.first_name },
+        { user_id: user._id, user_name: user.user_name },
         process.env.TOKEN_KEY,
         {
           algorithm: "HS256",
-          expiresIn: "5m",
+          expiresIn: "60m",
         }
       );
-
-      // save user token
       user.token = token;
-
-      // user
-      res.cookie("token", token, { maxAge: 60000 });
-      return res.redirect('/users/welcome');
+      // Here have a cookie
+      res.cookie("token", token, { maxAge: 600000 });
+      return res.redirect('/');
     }
-    res.status(400).send("Invalid Credentials");
+    res.redirect('/login');
   } catch (err) {
     console.log(err);
   }
 }
 
-exports.whoAreYou = async (req, res, next) => {
-    res.render('index', { title: 'Calypsodrop' });
+exports.whoAreYou = async (req, res) => {
+  res.render('index', { title: 'Calypsodrop', user: `${req.user.user_name}` });
 }
+  
 
-exports.uploadFile = async (req, res) => {
-    console.log(req.file);
-    try {
+exports.uploadFile = async (req, res) => {  
+      try {
+        console.log(req.user);
+        const upLoader = req.cookies.currentUser;
         const unique = Crypto.randomBytes(3*24).toString('hex');
         const theFile = req.file;
         const pasted = new Drop({
             ori_name: theFile.originalname,
             name: theFile.filename,
             created_at: new Date(),
-            created_by: 'Public',
+            created_by: upLoader,
             uniqueID: unique,
             itsPath: theFile.path,
             itsSize: theFile.size
@@ -116,10 +112,9 @@ exports.uploadFile = async (req, res) => {
             // send response
             pasted.save(function (err) {
                 if (err) { return next(err); }
-                res.render('show', { title: 'Calypsodrop', paste: pasted });
+                res.render('show', { title: 'Calypsodrop', paste: pasted, user: upLoader });
             });
         }
-
     } catch (err) {
         res.status(500).send(err);
     }
@@ -136,17 +131,23 @@ exports.sendDrop = async (req, res) => {
         res.render('404');
     }
 }
-// exports.uploadFile = async (req, res) => {
-//     console.log(req.file);
-//     try {
-//         const theFile = await Drop.create({
-//             name: req.file.originalname,
-//         })
-//         res.status(201).json({
-//             status: true,
-//             message: 'File is uploaded.',
-//         })
-//     } catch (err) {
-//         res.json({error: err});
-//     }
-// }
+
+exports.listUserFiles = async (req, res) => {
+    try {
+        const userFiles = await Drop.find({ created_by: req.user.user_name });
+        res.render('filelist', { title: 'Calypsodrop', files: userFiles });
+    } catch (err) {
+        console.log(err);
+        res.render('404');
+    }
+}
+
+exports.logoutUser = async (req, res) => {
+    try {
+        res.clearCookie('token');
+        res.redirect('/');
+    } catch (err) {
+        console.log(err);
+        res.render('404');
+    }
+}

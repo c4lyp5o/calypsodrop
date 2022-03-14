@@ -1,0 +1,9 @@
+extends layout
+
+block content
+    h1 Your Files
+    p
+      ul
+        each file in files
+          li= file.name
+    
