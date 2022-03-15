@@ -10,6 +10,7 @@ const alreadyIn = require('../middleware/calypsodrop').dontLoginAndRegister;
 router.get('/', auth, dropCommand.whoAreYou);
 router.post('/', upload.single('drops'), dropCommand.uploadFile);
 router.get('/drops/:uniqueID', dropCommand.sendDrop);
+router.post('/drops/delete/:uniqueID', dropCommand.deleteDrop);
 router.get('/register', alreadyIn, dropCommand.registerUserForm);
 router.post('/register', dropCommand.registerUser);
 router.get('/login', alreadyIn, dropCommand.loginUserForm);

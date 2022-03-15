@@ -6,3 +6,7 @@ html
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
     h1(class="center-align pink-text darken-1") You are not supposed to be here you know...
+    if user != 'Public'
+      p(class="center-align pink-text darken-1") Why don't you go back to the <a href="/">home page</a>?
+    else
+      p(class="center-align pink-text darken-1") Or maybe you want to <a href="/users/login">login</a>?

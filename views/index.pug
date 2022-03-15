@@ -1,16 +1,25 @@
 extends layout
 
 block content
+  if msg
+    p.center-align #{msg}
+
   if user != 'Public'
-    h1 Hello #{user}
+    h1.center-align Hello #{user}
   else
-    h1 Hello anon!
+    h1.center-align Hello anon!
    
   form(action='/' enctype='multipart/form-data' method='POST') 
-    legend Upload anything you want here
+    p.center-align Upload anything you want here
     br
-    label(for='thefile') Select a file:
-    input#drops(type='file' name='drops')
-    br
-    br
-    input(type="submit", value="Submit", class="btn btn-primary")
+    .divider
+    .file-field.input-field
+      .btn
+        span Choose File
+        input(type='file' name='drops')
+      .file-path-wrapper
+        input.file-path.validate(type='text')
+    .divider
+    p.center-align
+      button.btn.waves-effect.waves-light.center-align(type='submit' name='action') Upload
+   

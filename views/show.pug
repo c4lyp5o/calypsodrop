@@ -12,7 +12,11 @@ block content
   if paste.created_by == 'Public'
     p.center-align
       | You cannot edit this drop. Please 
-      a(href='/users/login') login
+      a(href='/login') login
       |  to edit your paste
   else
     p.center-align Hey #{paste.created_by}, do you want to delete this file?
+    form(action='/drops/delete/' + paste.uniqueID, method='post')
+      input(type='hidden', name='_method', value='delete')
+      p.center-align
+        button.btn.waves-effect.waves-light.center-align(type='submit' name='action') Yes

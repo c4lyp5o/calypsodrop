@@ -1,6 +1,8 @@
 const Crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
 const Drop = require('../models/calypsodrop');
 const User = require('../models/users');
 
@@ -83,8 +85,7 @@ exports.loginUser = async (req, res, next) => {
 
 exports.whoAreYou = async (req, res) => {
   res.render('index', { title: 'Calypsodrop', user: `${req.user.user_name}` });
-}
-  
+}  
 
 exports.uploadFile = async (req, res) => {  
       try {
@@ -128,7 +129,7 @@ exports.sendDrop = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
-        res.render('404');
+        res.render('404', { title: 'Oh no.. 404', user: req.cookies.currentUser});
     }
 }
 
@@ -138,7 +139,7 @@ exports.listUserFiles = async (req, res) => {
         res.render('filelist', { title: 'Calypsodrop', files: userFiles });
     } catch (err) {
         console.log(err);
-        res.render('404');
+        res.render('404', { title: 'Oh no.. 404', user: req.cookies.currentUser});
     }
 }
 
@@ -149,5 +150,19 @@ exports.logoutUser = async (req, res) => {
     } catch (err) {
         console.log(err);
         res.render('404');
+    }
+}
+
+exports.deleteDrop = async (req, res) => {
+    try {
+        const drop = await Drop.findOneAndDelete({ uniqueID: req.params.uniqueID });
+        await drop.remove();
+        const filePath = path.join(__dirname, "..", `${drop.itsPath}`);
+        fs.unlinkSync(filePath);
+        const msg = `${drop.ori_name} has been deleted`;        
+        res.render('index', { title: 'Calypsodrop', user: req.cookies.currentUser, msg: msg });
+    } catch (err) {
+        console.log(err);
+        res.render('404', { title: 'Oh no.. 404', user: req.cookies.currentUser});
     }
 }
